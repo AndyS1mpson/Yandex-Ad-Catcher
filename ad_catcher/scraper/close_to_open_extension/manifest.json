@@ -1,0 +1,15 @@
+{
+    "name": "SeleniumTesting",
+    "description": "Extension to open closed Shadow DOM for selenium testing",
+    "version": "1",
+    "author": "SeleniumTesting",
+    "manifest_version": 2,
+    "permissions": ["downloads", "<all_urls>"],
+    "content_scripts": [{
+        "matches": ["<all_urls>"],
+        "run_at": "document_start",
+        "all_frames": true,
+        "js": ["shadowInject.js"]
+    }],
+    "web_accessible_resources": ["injected.js"]
+}

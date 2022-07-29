@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    container_name: ad-catcher-web
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./ad_catcher/:/app"
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  celery:
+    build: .
+    container_name: ad-catcher-celery
+    ports:
+      - "8821:8821"
+    command: bash -c "
+      celery -A ad_catcher.celery_app worker --loglevel=debug -Q yandex_parse -n yandex_parse -c 1 &
+      celery -A ad_catcher.celery_app worker --loglevel=debug -Q ya_results -n ya_results -c 1"
+    volumes:
+      - './ad_catcher/:/app'
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+
+
+  redis:
+    image: redis:6.2-alpine
+    container_name: ad-catcher-redis
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - '6379:6379'
+    # volumes:
+    #   - redis:/data
+
+# volumes:
+#   redis:
+#     driver: local
